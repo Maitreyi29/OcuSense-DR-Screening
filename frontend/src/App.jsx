@@ -18,7 +18,7 @@ import HistoryModal from './components/HistoryModal';
 import FooterDisclaimer from './components/FooterDisclaimer';
 import { AlertCircle } from 'lucide-react';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://ocusense-api.onrender.com';
 
 export default function App() {
   const [selectedFile, setSelectedFile] = useState(null);
