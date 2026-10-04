@@ -463,18 +463,6 @@ Production frontend:
 
 https://ocu-sense-dr-screening.vercel.app
 
-### Backend
-
-**Render**
-
-Production API:
-
-https://ocusense-api.onrender.com
-
-### API Documentation
-
-https://ocusense-api.onrender.com/docs
-
 ---
 
 # 🛡️ Medical & Research Disclaimer
@@ -566,31 +554,6 @@ The primary goals of OcuSense are:
 OcuSense explores how **lightweight deep learning + explainable AI + accessible web technology** can be combined into a practical retinal screening workflow.
 
 The long-term vision is to evolve the prototype into a scalable application that can support screening workflows in resource-constrained healthcare environments while keeping the AI decision-making process visually interpretable.
-
----
-
-# 👩‍💻 Developer
-
-### Maitreyi Shandilya
-
-**BTech Computer Science Engineering**  
-**Machine Learning & Full-Stack Development**
-
-GitHub:
-
-https://github.com/Maitreyi29
-
-Project Repository:
-
-https://github.com/Maitreyi29/OcuSense-DR-Screening
-
----
-
-# 📜 License
-
-This project is licensed under the **MIT License**.
-
-See the [LICENSE](LICENSE) file for details.
 
 ---
 
