@@ -151,26 +151,88 @@ export default function App() {
     setErrorMessage(null);
 
     try {
+      // Step A: Prepare file for upload
       let fileToUpload = selectedFile;
       if (!fileToUpload && previewUrl) {
         const blob = await (await fetch(previewUrl)).blob();
         fileToUpload = new File([blob], 'retina_input.png', { type: 'image/png' });
       }
 
+      // Step B: Warm up the backend if it's cold-starting (Render free tier sleeps after inactivity)
+      console.log('[OcuSense] Checking backend readiness...');
+      try {
+        const warmupController = new AbortController();
+        const warmupTimeout = setTimeout(() => warmupController.abort(), 60000); // 60s for cold start
+        const healthRes = await fetch(`${API_BASE_URL}/api/health`, { signal: warmupController.signal });
+        clearTimeout(warmupTimeout);
+        if (!healthRes.ok) {
+          throw new Error('Backend health check failed');
+        }
+        const healthData = await healthRes.json();
+        console.log('[OcuSense] Backend ready:', healthData);
+      } catch (warmupErr) {
+        if (warmupErr.name === 'AbortError') {
+          throw new Error('Backend server is waking up and took too long. Please wait 30 seconds and try again — Render free tier needs time to cold-start.');
+        }
+        console.warn('[OcuSense] Health check failed, proceeding anyway:', warmupErr.message);
+      }
+
+      // Step C: Send image for prediction with a generous timeout
       const formData = new FormData();
       formData.append('file', fileToUpload);
 
-      const res = await fetch(`${API_BASE_URL}/api/predict`, {
-        method: 'POST',
-        body: formData,
-      });
+      const predictWithTimeout = async (timeoutMs = 120000) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+          console.log('[OcuSense] Sending image to /api/predict...');
+          const res = await fetch(`${API_BASE_URL}/api/predict`, {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          return res;
+        } catch (fetchErr) {
+          clearTimeout(timeoutId);
+          throw fetchErr;
+        }
+      };
+
+      // Try prediction, retry once on network failure
+      let res;
+      try {
+        res = await predictWithTimeout(120000);
+      } catch (firstErr) {
+        if (firstErr.name === 'AbortError') {
+          throw new Error('Analysis timed out after 2 minutes. The server may be under heavy load. Please try again.');
+        }
+        console.warn('[OcuSense] First attempt failed, retrying in 3s...', firstErr.message);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        try {
+          res = await predictWithTimeout(120000);
+        } catch (retryErr) {
+          if (retryErr.name === 'AbortError') {
+            throw new Error('Analysis timed out after retry. Please ensure the backend is running and try again.');
+          }
+          throw new Error(`Network error: Could not connect to the AI backend. Please check your internet connection and ensure the server at ${API_BASE_URL} is running.`);
+        }
+      }
 
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.detail || 'Prediction request failed');
+        let errorDetail = 'Prediction request failed';
+        try {
+          const errData = await res.json();
+          errorDetail = errData.detail || errorDetail;
+        } catch {
+          errorDetail = `Server returned status ${res.status}: ${res.statusText}`;
+        }
+        throw new Error(errorDetail);
       }
 
       const data = await res.json();
+      console.log('[OcuSense] Prediction successful:', data.class_name, `(${(data.confidence * 100).toFixed(1)}%)`);
       
       setTimeout(() => {
         setResultData(data);
@@ -181,11 +243,22 @@ export default function App() {
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         };
         setHistory((prev) => [historyItem, ...prev.slice(0, 9)]);
+
+        // Auto-scroll to results
+        setTimeout(() => {
+          const el = document.getElementById('screening-area');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 200);
       }, 1500);
 
     } catch (err) {
+      console.error('[OcuSense] Analysis failed:', err);
       setIsAnalyzing(false);
-      setErrorMessage(err.message || 'Error communicating with FastAPI backend.');
+      setErrorMessage(err.message || 'Error communicating with the AI backend. Please try again.');
+      // Scroll to error banner so user sees it
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
     }
   };
 

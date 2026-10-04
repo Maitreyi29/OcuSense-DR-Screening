@@ -1,10 +1,18 @@
 import os
 import io
 import torch
+import logging
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from PIL import Image
+
+# Optimize PyTorch CPU performance for resource-constrained environments (e.g. Render 0.1 CPU)
+torch.set_num_threads(1)
+torch.set_num_interop_threads(1)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("ocusense-api")
 
 # Import local modules from app
 from app.model import build_mobilenet_v2, inference_transforms, CLASS_INFO
@@ -40,10 +48,10 @@ grad_cam_engine = None
 @app.on_event("startup")
 def startup_event():
     global model, grad_cam_engine
-    print(f"Loading trained model from {MODEL_WEIGHTS_PATH}...")
+    logger.info(f"Loading trained model from {MODEL_WEIGHTS_PATH}...")
     model = build_mobilenet_v2(MODEL_WEIGHTS_PATH, device=device)
     grad_cam_engine = GradCAM(model, model.features[-1])
-    print("Model and Grad-CAM engine successfully loaded into memory!")
+    logger.info("Model and Grad-CAM engine successfully loaded into memory!")
 
 # --- ENDPOINTS ---
 
@@ -79,15 +87,19 @@ async def predict_retinopathy(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to decode image file: {str(e)}")
 
-    # 3. Preprocess matching training pipeline
-    input_tensor = inference_transforms(image).unsqueeze(0).to(device)
+    try:
+        # 3. Preprocess matching training pipeline
+        input_tensor = inference_transforms(image).unsqueeze(0).to(device)
 
-    # 4. Generate Predictions & Grad-CAM
-    heatmap, pred_stage, probs = grad_cam_engine.generate_heatmap(input_tensor)
-    confidence = float(probs[pred_stage])
+        # 4. Generate Predictions & Grad-CAM
+        heatmap, pred_stage, probs = grad_cam_engine.generate_heatmap(input_tensor)
+        confidence = float(probs[pred_stage])
 
-    # 5. Create Base64 Visualizations
-    original_b64, overlay_b64 = create_gradcam_overlay_base64(image, heatmap)
+        # 5. Create Base64 Visualizations
+        original_b64, overlay_b64 = create_gradcam_overlay_base64(image, heatmap)
+    except Exception as e:
+        logger.error(f"Inference error during prediction: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Inference failed: {str(e)}")
 
     # 6. Format exact payload expected by ResultsDashboard.jsx
     response_payload = {

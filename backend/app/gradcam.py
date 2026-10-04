@@ -32,7 +32,7 @@ class GradCAM:
 
         self.model.zero_grad()
         score = output[0, target_class]
-        score.backward(retain_graph=True)
+        score.backward(retain_graph=False)
 
         # Global average pooling of gradients
         weights = torch.mean(self.gradients, dim=[2, 3], keepdim=True)
@@ -45,6 +45,11 @@ class GradCAM:
         cam = cam / (np.max(cam) + 1e-8)
 
         probs = F.softmax(output, dim=1)[0].detach().cpu().numpy()
+        
+        # Clean up references to prevent memory accumulation
+        self.gradients = None
+        self.activations = None
+
         return cam, target_class, probs
 
 
