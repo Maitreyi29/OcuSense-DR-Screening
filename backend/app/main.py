@@ -50,7 +50,7 @@ def startup_event():
     global model, grad_cam_engine
     logger.info(f"Loading trained model from {MODEL_WEIGHTS_PATH}...")
     model = build_mobilenet_v2(MODEL_WEIGHTS_PATH, device=device)
-    grad_cam_engine = GradCAM(model, model.features[-1])
+    grad_cam_engine = GradCAM(model)
     logger.info("Model and Grad-CAM engine successfully loaded into memory!")
 
 # --- ENDPOINTS ---
@@ -122,5 +122,9 @@ async def predict_retinopathy(file: UploadFile = File(...)):
         "gradcam_overlay": overlay_b64,
         "disclaimer": "Academic screening & triage assistance tool. Not a substitute for formal clinical diagnosis."
     }
+
+    # Explicitly clear RAM for Render 512MB container
+    import gc
+    gc.collect()
 
     return JSONResponse(content=response_payload)
