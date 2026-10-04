@@ -1,30 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { Eye, Cpu, Activity, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Eye, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function AnalysisProgress({ previewUrl }) {
   const [step, setStep] = useState(1);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setStep(2), 600);
-    const t2 = setTimeout(() => setStep(3), 1300);
-    const t3 = setTimeout(() => setStep(4), 2000);
+    const t1 = setTimeout(() => setStep(2), 250);
+    const t2 = setTimeout(() => setStep(3), 500);
+    const t3 = setTimeout(() => setStep(4), 800);
+    const t4 = setTimeout(() => setStep(5), 1100);
+    const t5 = setTimeout(() => setStep(6), 1400);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      clearTimeout(t4);
+      clearTimeout(t5);
     };
   }, []);
 
   const steps = [
-    { id: 1, title: 'Preprocessing Image', desc: 'Resizing to 224x224 RGB & applying ImageNet normalization' },
-    { id: 2, title: 'MobileNetV2 Inference', desc: 'Executing deep convolutional layer feature extraction' },
-    { id: 3, title: 'Stage Classification', desc: 'Evaluating softmax probabilities across 5 ICDR DR classes' },
-    { id: 4, title: 'Grad-CAM Generation', desc: 'Extracting features[-1] gradients for spatial heatmap overlay' },
+    { id: 1, title: 'Retinal Image Received', desc: 'Decoding digital fundus photograph array' },
+    { id: 2, title: 'Image Validation', desc: 'Verifying MIME header, resolution, and color channels' },
+    { id: 3, title: 'Image Preprocessing', desc: 'Resizing to 224×224 RGB & applying ImageNet normalization' },
+    { id: 4, title: 'MobileNetV2 Inference', desc: 'Extracting bottleneck residual features across 18 layers' },
+    { id: 5, title: 'Probability Analysis', desc: 'Evaluating softmax confidence distribution across 5 ICDR stages' },
+    { id: 6, title: 'Grad-CAM Generation', desc: 'Computing spatial feature gradients for visual lesion heatmap' },
   ];
 
   return (
-    <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-cyan-500/30 shadow-2xl space-y-8 my-8 text-center max-w-3xl mx-auto">
+    <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-cyan-500/30 shadow-2xl space-y-8 my-8 text-center max-w-3xl mx-auto animate-fadeIn">
       
       {/* Retinal Scanning Core Visual */}
       <div className="relative w-40 h-40 sm:w-48 sm:h-48 mx-auto rounded-full bg-slate-950 p-2 border-2 border-cyan-500/40 shadow-2xl flex items-center justify-center overflow-hidden">
@@ -34,7 +40,7 @@ export default function AnalysisProgress({ previewUrl }) {
           <img
             src={previewUrl}
             alt="Scanning Fundus"
-            className="w-full h-full object-cover rounded-full opacity-60 filter contrast-125"
+            className="w-full h-full object-cover rounded-full opacity-70 filter contrast-125"
           />
         ) : (
           <Eye className="w-16 h-16 text-cyan-400 opacity-40 animate-pulse" />
@@ -58,12 +64,12 @@ export default function AnalysisProgress({ previewUrl }) {
           Analyzing Retinal Microvascular Structure
         </h3>
         <p className="text-xs text-slate-400 max-w-md mx-auto">
-          Please wait while OcuSense processes the fundus photo through the MobileNetV2 architecture.
+          Please wait while OcuSense processes the fundus photo through the MobileNetV2 deep neural network.
         </p>
       </div>
 
       {/* Progress Steps List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left max-w-xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left max-w-2xl mx-auto">
         {steps.map((s) => {
           const isDone = step > s.id;
           const isCurrent = step === s.id;

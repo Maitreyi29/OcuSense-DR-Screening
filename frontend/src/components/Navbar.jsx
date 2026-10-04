@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, Activity, History, LogOut, UserCheck, Menu, X, LogIn, UserPlus } from 'lucide-react';
+import { Eye, History, LogOut, UserCheck, Menu, X, LogIn, Activity } from 'lucide-react';
 
 export default function Navbar({
   backendStatus,
@@ -27,6 +27,8 @@ export default function Navbar({
     setIsMobileMenuOpen(false);
   };
 
+  const isOnline = backendStatus.connected;
+
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-800/80 bg-[#0b0f19]/85 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -41,8 +43,8 @@ export default function Navbar({
               <Eye className="w-6 h-6 text-cyan-400 group-hover:rotate-12 transition-transform duration-300" />
             </div>
             <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-950"></span>
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-amber-400'} opacity-75`}></span>
+              <span className={`relative inline-flex rounded-full h-3.5 w-3.5 ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'} border-2 border-slate-950`}></span>
             </span>
           </div>
 
@@ -92,15 +94,18 @@ export default function Navbar({
             )}
           </button>
 
-          {/* Backend Health Indicator */}
+          {/* AI Engine Status Indicator */}
           <div 
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs"
-            title={backendStatus.connected ? "FastAPI Backend Connected" : "FastAPI Backend Offline"}
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs shadow-inner"
+            title={isOnline ? "FastAPI PyTorch Backend Online" : "AI Engine Offline or Waking Up"}
           >
-            <span className={`w-2 h-2 rounded-full ${backendStatus.connected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-500'}`} />
-            <span className="text-slate-400 text-[11px] font-mono">
-              {backendStatus.connected ? `API (${backendStatus.device.toUpperCase()})` : 'Standby'}
-            </span>
+            <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_#10b981]' : 'bg-amber-500 shadow-[0_0_8px_#f59e0b]'}`} />
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] text-slate-400 font-semibold leading-none">AI ENGINE</span>
+              <span className={`text-[11px] font-bold font-mono ${isOnline ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {isOnline ? 'ONLINE' : 'OFFLINE'}
+              </span>
+            </div>
           </div>
 
           {/* Log In / Sign Up OR User Profile */}
@@ -142,6 +147,18 @@ export default function Navbar({
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
         <div className="xl:hidden p-4 bg-slate-950/95 border-b border-slate-800 space-y-2 animate-fadeIn">
+          
+          {/* Mobile AI Engine Status */}
+          <div className="flex items-center justify-between px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs mb-3">
+            <span className="text-slate-400 font-semibold">AI ENGINE STATUS</span>
+            <div className="flex items-center gap-1.5 font-bold font-mono">
+              <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-500'}`} />
+              <span className={isOnline ? 'text-emerald-400' : 'text-amber-400'}>
+                {isOnline ? 'ONLINE' : 'OFFLINE'}
+              </span>
+            </div>
+          </div>
+
           {navLinks.map((link) => (
             <button
               key={link.name}

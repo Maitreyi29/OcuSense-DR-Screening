@@ -27,7 +27,7 @@ export default function PipelineSection() {
     {
       id: 4,
       title: 'Grad-CAM Heatmap Overlay',
-      desc: 'Calculates gradients at features[-1] layer and overlays OpenCV JET colormap.',
+      desc: 'Calculates gradients at features[-1] layer and overlays colormap heatmaps.',
       icon: Eye,
       color: 'from-emerald-500 to-amber-500',
     },
@@ -41,7 +41,7 @@ export default function PipelineSection() {
   ];
 
   return (
-    <div className="w-full glass-panel p-8 sm:p-10 rounded-3xl border border-slate-800 text-left space-y-6 my-10">
+    <section id="pipeline-section" className="w-full glass-panel p-8 sm:p-10 rounded-3xl border border-slate-800 text-left space-y-6 my-10 scroll-mt-24">
       <div>
         <h3 className="text-xl font-bold text-white tracking-tight">
           AI Retinal Screening Workflow
@@ -89,6 +89,6 @@ export default function PipelineSection() {
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
