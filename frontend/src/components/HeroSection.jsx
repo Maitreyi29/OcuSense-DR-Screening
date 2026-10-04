@@ -28,10 +28,10 @@ export default function HeroSection({ onStartScreening, onLearnMore, onLoadSampl
           </h1>
 
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-medium max-w-xl">
-            OcuSense utilizes transfer-learned MobileNetV2 deep neural networks to evaluate retinal fundus photography, classifying severity across 5 standardized ICDR clinical stages and pin-pointing microvascular pathology using Grad-CAM heatmaps.
+            OcuSense uses deep neural networks to evaluate retinal fundus photography, classifying severity across 5 clinical stages with explainable Grad-CAM visual heatmaps.
           </p>
 
-          {/* Primary & Secondary Action CTAs */}
+          {/* Action CTAs */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
             
             <button

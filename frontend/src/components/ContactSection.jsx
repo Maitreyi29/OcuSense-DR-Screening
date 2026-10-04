@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Mail, User, Send, CheckCircle2, MessageSquare, AlertCircle, Sparkles, Building, ExternalLink } from 'lucide-react';
+import { Mail, User, Send, MessageSquare, AlertCircle, ExternalLink, Info } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
 export default function ContactSection() {
-  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [statusNotice, setStatusNotice] = useState(null); // { type: 'success'|'info'|'error', text: string }
   const [errorMessage, setErrorMessage] = useState('');
 
   const developerEmail = "maitreyishandilya29@gmail.com";
@@ -13,9 +13,10 @@ export default function ContactSection() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
+    setStatusNotice(null);
 
     if (!formData.name.trim()) {
-      setErrorMessage('Please enter your full name.');
+      setErrorMessage('Please enter your name.');
       return;
     }
     if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -42,7 +43,6 @@ export default function ContactSection() {
           {
             from_name: formData.name,
             from_email: formData.email,
-            subject: formData.subject || 'OcuSense Academic Inquiry',
             message: formData.message,
             to_email: developerEmail
           },
@@ -50,45 +50,48 @@ export default function ContactSection() {
         );
 
         setIsLoading(false);
-        setIsSubmitted(true);
-        setFormData({ name: '', email: '', subject: '', message: '' });
+        setStatusNotice({
+          type: 'success',
+          text: `Message delivered via email service to ${developerEmail}.`
+        });
+        setFormData({ name: '', email: '', message: '' });
         return;
       } catch (err) {
-        console.error('EmailJS error:', err);
+        console.error('EmailJS send error:', err);
         setIsLoading(false);
-        setErrorMessage('Failed to send email via API service. Opening your default mail client instead...');
+        // Fall back to opening mail client without faking
       }
     }
 
-    // Direct mailto client fallback
+    // Direct mailto client trigger (Honest fallback: no fake "sent" message without launching mailto)
     setTimeout(() => {
       setIsLoading(false);
-      const mailtoUrl = `mailto:${developerEmail}?subject=${encodeURIComponent(formData.subject || 'OcuSense Inquiry from ' + formData.name)}&body=${encodeURIComponent(
+      const mailtoUrl = `mailto:${developerEmail}?subject=${encodeURIComponent('OcuSense Message from ' + formData.name)}&body=${encodeURIComponent(
         `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
       )}`;
       window.location.href = mailtoUrl;
 
-      setIsSubmitted(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 600);
+      setStatusNotice({
+        type: 'info',
+        text: `Opening your default email client to send your message directly to ${developerEmail}.`
+      });
+      setFormData({ name: '', email: '', message: '' });
+    }, 400);
   };
 
   return (
-    <section id="contact-section" className="w-full py-12 text-left scroll-mt-24">
-      <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-slate-800 space-y-10 bg-gradient-to-r from-slate-900/80 via-slate-900/50 to-slate-950/80 shadow-2xl">
+    <section id="contact-section" className="w-full py-10 text-left scroll-mt-24">
+      <div className="glass-panel p-8 sm:p-12 rounded-3xl border border-slate-800 space-y-8 bg-gradient-to-r from-slate-900/80 via-slate-900/50 to-slate-950/80 shadow-2xl">
         
         {/* Section Header */}
-        <div className="max-w-3xl mx-auto space-y-3 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold">
+        <div className="max-w-3xl mx-auto space-y-2 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold">
             <Mail className="w-3.5 h-3.5" />
-            <span>Developer Contact & Feedback</span>
+            <span>Developer Contact</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Get in Touch with the Developer
+          <h2 className="text-3xl font-extrabold text-white tracking-tight">
+            Contact Us
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400">
-            Inquiries regarding research evaluations, system architecture, or clinical feedback.
-          </p>
         </div>
 
         <div className="grid lg:grid-cols-12 gap-8 items-start max-w-5xl mx-auto">
@@ -107,14 +110,9 @@ export default function ContactSection() {
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed pt-1">
-              Developer of OcuSense — AI-Based Diabetic Retinopathy Screening System. Built with MobileNetV2, PyTorch, FastAPI, and React.
-            </p>
-
             <div className="space-y-3 pt-3 border-t border-slate-800/80 text-xs text-slate-300">
-              
               <div className="space-y-1">
-                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">DIRECT EMAIL</span>
+                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">EMAIL ADDRESS</span>
                 <a
                   href={`mailto:${developerEmail}`}
                   className="flex items-center gap-2 text-cyan-300 hover:text-cyan-200 font-mono font-bold hover:underline"
@@ -122,122 +120,95 @@ export default function ContactSection() {
                 >
                   <Mail className="w-4 h-4 text-cyan-400 flex-shrink-0" />
                   <span className="truncate">{developerEmail}</span>
-                  <ExternalLink className="w-3 h-3 text-cyan-400" />
+                  <ExternalLink className="w-3 h-3 text-cyan-400 flex-shrink-0" />
                 </a>
               </div>
-
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">PROJECT SCOPE</span>
-                <div className="flex items-center gap-2 text-slate-300">
-                  <Building className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Academic Healthcare AI Research</span>
-                </div>
-              </div>
-
             </div>
           </div>
 
-          {/* Right Column: Interactive Contact Form */}
+          {/* Right Column: Simplified Contact Form */}
           <div className="lg:col-span-7 glass-card p-6 sm:p-8 rounded-3xl border border-slate-800">
             
-            {isSubmitted ? (
-              <div className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-3 animate-fadeIn">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
-                <h3 className="text-lg font-bold text-white">Message Dispatched!</h3>
-                <p className="text-xs text-slate-300">
-                  Thank you for reaching out. Your message has been routed to <strong>{developerEmail}</strong>.
-                </p>
-                <button
-                  onClick={() => setIsSubmitted(false)}
-                  className="mt-4 px-4 py-2 rounded-xl bg-slate-800 text-slate-200 text-xs font-semibold hover:bg-slate-700 transition-all cursor-pointer"
-                >
-                  Send Another Message
-                </button>
+            {statusNotice && (
+              <div className={`p-4 rounded-2xl border text-xs mb-4 flex items-start gap-2.5 ${
+                statusNotice.type === 'success'
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                  : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
+              }`}>
+                <Info className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                <span>{statusNotice.text}</span>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                
-                {errorMessage && (
-                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
-                    <span>{errorMessage}</span>
-                  </div>
-                )}
+            )}
 
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Your Name *</label>
-                    <div className="relative">
-                      <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
-                      <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Dr. Sarah Mitchell"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Your Email *</label>
-                    <div className="relative">
-                      <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
-                      <input
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="sarah@hospital.org"
-                        className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                      />
-                    </div>
-                  </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              
+              {errorMessage && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                  <span>{errorMessage}</span>
                 </div>
+              )}
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Subject</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Name *</label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                   <input
                     type="text"
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder="Academic Evaluation / Research Inquiry"
-                    className="w-full px-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Your name"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
                   />
                 </div>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Message *</label>
-                  <div className="relative">
-                    <MessageSquare className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
-                    <textarea
-                      rows={4}
-                      required
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Provide details regarding your query or feedback..."
-                      className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
-                    />
-                  </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Email *</label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="your.email@example.com"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                  />
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isLoading ? (
-                    <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      <span>Transmit Message to Maitreyi</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Message *</label>
+                <div className="relative">
+                  <MessageSquare className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                  <textarea
+                    rows={4}
+                    required
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    placeholder="Write your message here..."
+                    className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 resize-none"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    <span>Send Message</span>
+                  </>
+                )}
+              </button>
+            </form>
 
           </div>
 

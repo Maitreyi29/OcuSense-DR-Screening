@@ -1,122 +1,134 @@
-import React from 'react';
-import { BookOpen, CheckCircle, AlertTriangle, AlertCircle, Eye, ShieldAlert } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, CheckCircle, AlertTriangle, AlertCircle, Eye, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function ClassGuide() {
+  const [expandedStage, setExpandedStage] = useState(null);
+
   const stages = [
     {
       stage: 0,
       name: 'No Diabetic Retinopathy',
-      severity: 'Normal Retina',
+      severity: 'Stage 0',
       badgeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
       icon: CheckCircle,
+      description: 'Normal retina without microaneurysms or lesions.',
       lesions: 'None',
-      description: 'Retinal blood vessels appear healthy without microaneurysms, hemorrhages, or macular edema.',
       pathology: 'Normal basement membrane integrity; clear macula and optic disc boundaries.',
       recommendation: 'Annual routine dilated fundus examination.'
     },
     {
       stage: 1,
       name: 'Mild Diabetic Retinopathy',
-      severity: 'Early Non-Proliferative (NPDR)',
+      severity: 'Stage 1',
       badgeColor: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
       icon: AlertTriangle,
+      description: 'Microaneurysms only present in retinal capillaries.',
       lesions: 'Microaneurysms only',
-      description: 'Small red outpouchings in retinal capillaries caused by pericyte loss.',
-      pathology: 'Earliest clinically visible sign of DR. Localized capillary dilation.',
-      recommendation: 'Follow-up exam in 6–12 months with tight glycemic control.'
+      pathology: 'Earliest visible sign of DR; localized capillary outpouching.',
+      recommendation: 'Follow-up exam in 6–12 months.'
     },
     {
       stage: 2,
       name: 'Moderate Diabetic Retinopathy',
-      severity: 'Moderate Non-Proliferative (NPDR)',
+      severity: 'Stage 2',
       badgeColor: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
       icon: AlertCircle,
-      lesions: 'Microaneurysms, blot hemorrhages, cotton-wool spots, hard exudates',
-      description: 'More extensive capillary occlusion leading to retinal ischemia and lipid exudate leakage.',
-      pathology: 'Capillary dropout, lipid deposits around macula, axonal transport breakdown.',
-      recommendation: 'Referral to an ophthalmologist within 2–4 months.'
+      description: 'Multiple microaneurysms, hemorrhages, or exudates.',
+      lesions: 'Hemorrhages, cotton-wool spots, hard exudates',
+      pathology: 'Capillary occlusion and localized lipid leakage around macula.',
+      recommendation: 'Ophthalmic evaluation within 2–4 months.'
     },
     {
       stage: 3,
       name: 'Severe Diabetic Retinopathy',
-      severity: 'Severe Non-Proliferative (NPDR)',
+      severity: 'Stage 3',
       badgeColor: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
       icon: ShieldAlert,
-      lesions: 'Extensive intraretinal hemorrhages (4 quadrants), venous beading (2+ quadrants), IRMA (1+ quadrant)',
-      description: 'Meets the 4-2-1 clinical rule. Widespread retinal ischemia indicating high progression risk.',
-      pathology: 'Severe vascular compromise leading to intense VEGF expression signaling neovascular growth.',
-      recommendation: 'Urgent ophthalmic evaluation within 2–4 weeks.'
+      description: 'Extensive intraretinal hemorrhages or venous beading.',
+      lesions: 'Severe hemorrhages (4 quadrants), venous beading',
+      pathology: 'Widespread retinal ischemia signaling high risk of neovascularization.',
+      recommendation: 'Urgent evaluation within 2–4 weeks.'
     },
     {
       stage: 4,
       name: 'Proliferative Diabetic Retinopathy',
-      severity: 'Advanced PDR Stage',
+      severity: 'Stage 4',
       badgeColor: 'bg-rose-950 text-rose-300 border-rose-700',
       icon: Eye,
-      lesions: 'Neovascularization of the disc (NVD/NVE), vitreous hemorrhage, fibrovascular proliferation',
-      description: 'Growth of abnormal fragile new blood vessels that bleed into the vitreous body and cause retinal detachment.',
-      pathology: 'Abnormal angiogenesis driven by ischemia; extreme risk of vision loss.',
-      recommendation: 'Immediate specialized ophthalmic treatment (panretinal photocoagulation / anti-VEGF injections).'
+      description: 'Growth of fragile abnormal new blood vessels.',
+      lesions: 'Neovascularization, vitreous hemorrhage risk',
+      pathology: 'Severe ischemia driving abnormal angiogenesis and vision loss risk.',
+      recommendation: 'Immediate specialized ophthalmic treatment.'
     }
   ];
 
   return (
-    <div className="w-full space-y-8 text-left animate-fadeIn">
+    <div className="w-full space-y-6 text-left animate-fadeIn my-10">
       
       {/* Header */}
       <div className="space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold">
           <BookOpen className="w-3.5 h-3.5" />
-          <span>International Clinical Diabetic Retinopathy (ICDR) Scale</span>
+          <span>ICDR Severity Scale</span>
         </div>
         <h2 className="text-3xl font-extrabold text-white tracking-tight">
           5-Stage Diabetic Retinopathy Classification
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">
-          Detailed breakdown of clinical lesions, microvascular pathology, and recommended ophthalmic follow-up schedules.
-        </p>
       </div>
 
       {/* Cards List */}
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {stages.map((item) => {
-          const IconComp = item.icon;
+          const isExpanded = expandedStage === item.stage;
           return (
             <div
               key={item.stage}
-              className="glass-panel p-6 rounded-3xl border border-slate-800 glass-card-hover space-y-4"
+              className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-white font-bold font-mono">
+                  <div className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-cyan-400 font-bold font-mono text-sm">
                     {item.stage}
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white tracking-tight">
+                    <h3 className="text-base font-bold text-white tracking-tight">
                       {item.name}
                     </h3>
                     <p className="text-xs text-slate-400 font-medium">
-                      {item.severity}
+                      {item.description}
                     </p>
                   </div>
                 </div>
 
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${item.badgeColor} w-fit`}>
-                  Lesions: {item.lesions}
-                </span>
+                <div className="flex items-center gap-3 self-end sm:self-auto">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${item.badgeColor}`}>
+                    {item.severity}
+                  </span>
+                  
+                  <button
+                    onClick={() => setExpandedStage(isExpanded ? null : item.stage)}
+                    className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-xs"
+                  >
+                    <span>{isExpanded ? 'Less' : 'Learn More'}</span>
+                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4 pt-2 border-t border-slate-800/80 text-xs text-slate-300">
-                <div>
-                  <span className="text-slate-400 font-semibold block mb-1">Clinical Manifestation:</span>
-                  <p>{item.description}</p>
+              {/* Expandable Details */}
+              {isExpanded && (
+                <div className="grid sm:grid-cols-2 gap-3 pt-3 border-t border-slate-800/80 text-xs text-slate-300 animate-fadeIn">
+                  <div>
+                    <span className="text-slate-400 font-semibold block mb-0.5">Primary Lesions:</span>
+                    <p>{item.lesions}</p>
+                  </div>
+                  <div>
+                    <span className="text-cyan-400 font-semibold block mb-0.5">Recommendation:</span>
+                    <p className="text-slate-200">{item.recommendation}</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-cyan-400 font-semibold block mb-1">Ophthalmic Pathway:</span>
-                  <p className="text-slate-200">{item.recommendation}</p>
-                </div>
-              </div>
+              )}
             </div>
           );
         })}

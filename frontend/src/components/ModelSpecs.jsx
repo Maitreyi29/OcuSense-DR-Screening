@@ -22,13 +22,13 @@ export default function ModelSpecs() {
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold">
             <Cpu className="w-3.5 h-3.5" />
-            <span>Technical Deep Learning Architecture</span>
+            <span>Technical Model Details</span>
           </div>
           <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
-            Technical Model Specifications & Parameters
+            Technical Model Specifications
           </h3>
-          <p className="text-xs text-slate-400 max-w-xl">
-            Detailed breakdown of PyTorch MobileNetV2 architecture, input matrix transformations, and layer configurations.
+          <p className="text-xs text-slate-400 max-w-xl font-mono">
+            MobileNetV2 • PyTorch • 5-Class Softmax • Grad-CAM • 224×224 Input
           </p>
         </div>
 
@@ -36,7 +36,7 @@ export default function ModelSpecs() {
           onClick={() => setIsExpanded(!isExpanded)}
           className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer flex-shrink-0"
         >
-          <span>{isExpanded ? 'Collapse Model Details' : 'View Technical Model Details'}</span>
+          <span>{isExpanded ? 'Collapse Technical Details' : 'View Technical Model Details'}</span>
           {isExpanded ? <ChevronUp className="w-4 h-4 text-cyan-400" /> : <ChevronDown className="w-4 h-4 text-cyan-400" />}
         </button>
 

@@ -6,35 +6,35 @@ export default function PipelineSection() {
     {
       id: 1,
       title: 'Retinal Image Input',
-      desc: 'High-resolution digital fundus photography centered on macula or optic nerve.',
+      desc: 'Upload a fundus image.',
       icon: UploadCloud,
       color: 'from-cyan-500 to-blue-500',
     },
     {
       id: 2,
-      title: 'Preprocessing Pipeline',
-      desc: 'Aspect-ratio preserving resize to 224×224, tensor conversion & ImageNet mean/std normalization.',
+      title: 'Preprocessing',
+      desc: 'Resize and normalize.',
       icon: Sliders,
       color: 'from-blue-500 to-teal-500',
     },
     {
       id: 3,
-      title: 'MobileNetV2 Inference',
-      desc: 'Inverted residual bottleneck blocks extract deep spatial microvascular lesion features.',
+      title: 'MobileNetV2',
+      desc: 'Run AI inference.',
       icon: Cpu,
       color: 'from-teal-500 to-emerald-500',
     },
     {
       id: 4,
-      title: 'Grad-CAM Heatmap Overlay',
-      desc: 'Calculates gradients at features[-1] layer and overlays colormap heatmaps.',
+      title: 'Grad-CAM',
+      desc: 'Generate visual explanation.',
       icon: Eye,
       color: 'from-emerald-500 to-amber-500',
     },
     {
       id: 5,
-      title: 'Screening Result & Triage',
-      desc: 'Returns predicted stage, confidence, 5-stage distribution & ophthalmic pathway.',
+      title: 'Screening Result',
+      desc: 'Display stage and confidence.',
       icon: CheckCircle2,
       color: 'from-amber-500 to-rose-500',
     },
@@ -47,7 +47,7 @@ export default function PipelineSection() {
           AI Retinal Screening Workflow
         </h3>
         <p className="text-xs text-slate-400">
-          End-to-end data transformation pipeline from image upload to explainable diagnosis.
+          Step-by-step pipeline from upload to visual explainability.
         </p>
       </div>
 
@@ -68,14 +68,14 @@ export default function PipelineSection() {
 
                 <div>
                   <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">
-                    Step 0{s.id}
+                    0{s.id}
                   </span>
                   <h4 className="text-sm font-bold text-white tracking-tight">
                     {s.title}
                   </h4>
                 </div>
 
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-xs text-slate-400 leading-relaxed">
                   {s.desc}
                 </p>
               </div>

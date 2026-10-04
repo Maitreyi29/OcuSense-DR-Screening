@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "@supabase/supabase-js": "^2.117.2",
     "firebase": "^12.19.0",
     "lucide-react": "^1.50.0",
     "react": "^19.2.8",

@@ -7,40 +7,32 @@ export default function FaqSection() {
   const faqs = [
     {
       q: 'What is OcuSense?',
-      a: 'OcuSense is an AI-powered Diabetic Retinopathy Screening System designed to analyze digital fundus photographs, classify disease severity across 5 clinical stages, and generate Grad-CAM heatmaps highlighting microvascular pathology.'
+      a: 'OcuSense is an AI screening system for Diabetic Retinopathy that classifies fundus images across 5 stages and generates Grad-CAM heatmaps.'
     },
     {
-      q: 'What is Diabetic Retinopathy?',
-      a: 'Diabetic Retinopathy (DR) is a microvascular complication of diabetes caused by prolonged high blood sugar damaging small blood vessels in the retina. Symptoms range from microaneurysms to severe hemorrhages and proliferative new vessel growth.'
+      q: 'What images are supported?',
+      a: 'Macula-centered or optic disc fundus photography in PNG or JPEG format up to 10MB.'
     },
     {
-      q: 'What type of image can I upload?',
-      a: 'You can upload high-resolution macula-centered or optic disc fundus photographs in PNG or JPEG format up to 10MB in size.'
-    },
-    {
-      q: 'How does the AI screening work?',
-      a: 'The image is normalized to 224x224 RGB and passed through a fine-tuned MobileNetV2 deep neural network. The model predicts class probabilities via softmax and extracts gradients from the final convolutional layer (features[-1]) to construct a Grad-CAM heatmap overlay.'
+      q: 'How are the predictions generated?',
+      a: 'Images are normalized and evaluated by a MobileNetV2 deep learning model with Grad-CAM visual heatmaps.'
     },
     {
       q: 'What are the five severity levels?',
-      a: 'The system uses the International Clinical Diabetic Retinopathy (ICDR) scale: Stage 0 (No DR), Stage 1 (Mild), Stage 2 (Moderate), Stage 3 (Severe), and Stage 4 (Proliferative DR).'
-    },
-    {
-      q: 'How long does screening take?',
-      a: 'Inference and heatmap generation typically complete in under 1 second when connected to the FastAPI backend.'
+      a: 'Stage 0 (No DR), Stage 1 (Mild), Stage 2 (Moderate), Stage 3 (Severe), and Stage 4 (Proliferative DR).'
     },
     {
       q: 'Is OcuSense a medical diagnosis?',
-      a: 'No. OcuSense is an educational and screening decision-support tool. All results must be evaluated and confirmed by a certified ophthalmologist or qualified healthcare professional.'
+      a: 'No. It is an educational and research screening tool. Results should be reviewed by a qualified healthcare professional.'
     },
     {
       q: 'Can I upload another image?',
-      a: 'Yes. Simply click the "Screen Another Image" or "Clear Selection" button to reset the dropzone and upload a new fundus photo.'
+      a: 'Yes. Use the Clear or Load Sample buttons to select or reset the screening image.'
     }
   ];
 
   return (
-    <section id="faq-section" className="w-full py-12 text-left scroll-mt-24">
+    <section id="faq-section" className="w-full py-10 text-left scroll-mt-24">
       <div className="space-y-6">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold">
@@ -48,11 +40,8 @@ export default function FaqSection() {
             <span>Frequently Asked Questions</span>
           </div>
           <h2 className="text-3xl font-extrabold text-white tracking-tight">
-            Got Questions? We Have Answers
+            Frequently Asked Questions
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">
-            Everything you need to know about the OcuSense AI screening platform.
-          </p>
         </div>
 
         <div className="space-y-3">

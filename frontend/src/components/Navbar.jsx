@@ -113,7 +113,9 @@ export default function Navbar({
             <div className="flex items-center gap-2">
               <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
                 <UserCheck className="w-3.5 h-3.5" />
-                <span className="truncate max-w-[110px]">{currentUser.name}</span>
+                <span className="truncate max-w-[120px]">
+                  {currentUser.name ? `Welcome, ${currentUser.name}` : 'Account'}
+                </span>
               </div>
               <button
                 onClick={onLogout}

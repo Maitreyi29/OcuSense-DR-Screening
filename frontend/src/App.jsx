@@ -17,6 +17,8 @@ import ContactSection from './components/ContactSection';
 import HistoryModal from './components/HistoryModal';
 import FooterDisclaimer from './components/FooterDisclaimer';
 import { AlertCircle } from 'lucide-react';
+import { supabase } from './supabaseClient';
+import { formatSupabaseUser, logoutUser } from './services/authService';
 
 const API_BASE_URL = 'https://ocusense-api.onrender.com';
 
@@ -28,11 +30,8 @@ export default function App() {
   const [resultData, setResultData] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  // Authentication State
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('ocusense_user_session');
-    return saved ? JSON.parse(saved) : null;
-  });
+  // Authentication State with Supabase
+  const [currentUser, setCurrentUser] = useState(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   // Screening History State
@@ -45,7 +44,30 @@ export default function App() {
   // Backend Health State
   const [backendStatus, setBackendStatus] = useState({ connected: false, device: 'cpu' });
 
-  // 1. Check Backend Health on mount & polling
+  // 1. Supabase Session Persistence & Auth State Change Listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setCurrentUser(formatSupabaseUser(session.user));
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setCurrentUser(formatSupabaseUser(session.user));
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  // 2. Check Backend Health on mount & polling
   useEffect(() => {
     checkHealth();
     const interval = setInterval(checkHealth, 10000);
@@ -66,25 +88,18 @@ export default function App() {
     }
   };
 
-  // 2. Persist history & user session
+  // 3. Persist history
   useEffect(() => {
     localStorage.setItem('ocusense_screening_history', JSON.stringify(history));
   }, [history]);
 
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('ocusense_user_session', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('ocusense_user_session');
-    }
-  }, [currentUser]);
-
-  // 3. User Auth Handlers
+  // 4. User Auth Handlers
   const handleLoginSuccess = (user) => {
     setCurrentUser(user);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutUser();
     setCurrentUser(null);
   };
 

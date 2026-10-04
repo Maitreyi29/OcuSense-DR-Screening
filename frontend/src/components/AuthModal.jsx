@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, ShieldCheck, Lock, Mail, User, Building, ArrowRight, CheckCircle2, Eye, Sparkles, AlertCircle, KeyRound } from 'lucide-react';
+import { X, Lock, Mail, User, ArrowRight, CheckCircle2, Eye, Sparkles, AlertCircle } from 'lucide-react';
 import { registerUser, loginUser, resetPassword } from '../services/authService';
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
@@ -7,16 +7,14 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    organization: '',
     password: '',
     confirmPassword: '',
-    role: 'Ophthalmologist / Clinician',
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationSentEmail, setVerificationSentEmail] = useState('');
 
   if (!isOpen) return null;
 
@@ -24,13 +22,14 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
     setMode(newMode);
     setErrorMessage('');
     setSuccessMsg('');
-    setVerificationSent(false);
+    setVerificationSentEmail('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMsg('');
+    setVerificationSentEmail('');
 
     try {
       if (mode === 'forgot') {
@@ -43,7 +42,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
 
       if (mode === 'signup') {
         if (!formData.name.trim()) {
-          setErrorMessage('Please enter your full name.');
+          setErrorMessage('Please enter your name.');
           return;
         }
         if (formData.password !== formData.confirmPassword) {
@@ -56,28 +55,23 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         }
 
         setIsLoading(true);
-        const registered = await registerUser({
+        const result = await registerUser({
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          role: formData.role,
-          organization: formData.organization,
         });
         setIsLoading(false);
 
-        if (registered.verificationSent) {
-          setVerificationSent(true);
-          setSuccessMsg(`Registration successful! Verification email sent to ${registered.email}.`);
+        if (result.requiresVerification) {
+          setVerificationSentEmail(result.email);
+          setSuccessMsg(`Verification email sent! Please check your inbox at ${result.email} and click the confirmation link to activate your OcuSense account.`);
         } else {
-          setSuccessMsg('Account created and authenticated successfully!');
+          setSuccessMsg('Account created and activated successfully! Logging you in...');
+          setTimeout(() => {
+            onLoginSuccess(result.user);
+            onClose();
+          }, 1200);
         }
-
-        setTimeout(() => {
-          onLoginSuccess(registered);
-          onClose();
-          setSuccessMsg('');
-          setVerificationSent(false);
-        }, 1800);
 
       } else {
         // Login Flow
@@ -88,12 +82,12 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         });
         setIsLoading(false);
 
-        setSuccessMsg(`Welcome back, ${user.name}! Authentication verified.`);
+        setSuccessMsg(`Welcome back, ${user.name}!`);
         setTimeout(() => {
           onLoginSuccess(user);
           onClose();
           setSuccessMsg('');
-        }, 800);
+        }, 600);
       }
     } catch (err) {
       setIsLoading(false);
@@ -104,10 +98,8 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
   const handleGuestAccess = () => {
     const guestUser = {
       uid: 'guest_session',
-      name: 'Guest Clinician',
+      name: 'Guest User',
       email: 'guest@ocusense.ai',
-      role: 'Educational Screening Access',
-      organization: 'OcuSense Demo Sandbox',
     };
     onLoginSuccess(guestUser);
     onClose();
@@ -133,13 +125,13 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
           </div>
 
           <h2 className="text-2xl font-bold text-white tracking-tight">
-            {mode === 'login' ? 'Clinician Log In' : mode === 'signup' ? 'Create Clinical Account' : 'Reset Password'}
+            {mode === 'login' ? 'Log In' : mode === 'signup' ? 'Create Account' : 'Reset Password'}
           </h2>
           <p className="text-xs text-slate-400">
             {mode === 'login'
-              ? 'Enter your registered credentials to access the screening portal'
+              ? 'Enter your registered credentials to sign in'
               : mode === 'signup'
-              ? 'Register your medical profile to enable persistent session tracking'
+              ? 'Enter your name, email, and password to register'
               : 'Enter your email address to receive password reset instructions'}
           </p>
         </div>
@@ -183,58 +175,39 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
         {/* Success Alert */}
         {successMsg && (
           <div className="p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs space-y-1 font-semibold animate-fadeIn">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-              <span>{successMsg}</span>
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p>{successMsg}</p>
+              </div>
             </div>
-            {verificationSent && (
-              <p className="text-[11px] text-emerald-200 pl-6 font-normal">
-                An email verification link has been dispatched to your inbox. Please click the link to verify your clinical account.
-              </p>
-            )}
           </div>
         )}
 
         {/* Auth Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          {/* Sign Up Name & Org */}
+          {/* Sign Up Name */}
           {mode === 'signup' && (
-            <>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Full Name *</label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Dr. Sarah Mitchell"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1"
-                  />
-                </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Name *</label>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Your name"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1"
+                />
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Medical Center / Institution</label>
-                <div className="relative">
-                  <Building className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
-                  <input
-                    type="text"
-                    value={formData.organization}
-                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                    placeholder="General Eye Hospital & Research"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1"
-                  />
-                </div>
-              </div>
-            </>
+            </div>
           )}
 
           {/* Email Input */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300">Clinical Email *</label>
+            <label className="text-xs font-semibold text-slate-300">Email *</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
               <input
@@ -242,28 +215,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="clinician@hospital.org"
+                placeholder="your.email@example.com"
                 className="w-full pl-10 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500 focus:ring-1"
               />
             </div>
           </div>
-
-          {/* Role Select (Sign Up Mode) */}
-          {mode === 'signup' && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Professional Role</label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full px-3.5 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-slate-100 text-xs focus:outline-none focus:border-cyan-500"
-              >
-                <option value="Ophthalmologist / Clinician">Ophthalmologist / Clinician</option>
-                <option value="Medical Researcher">Medical ML Researcher</option>
-                <option value="Faculty Evaluator">Faculty / Academic Evaluator</option>
-                <option value="Student">Computer Science Student</option>
-              </select>
-            </div>
-          )}
 
           {/* Password Input */}
           {mode !== 'forgot' && (
@@ -322,7 +278,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
             ) : (
               <>
                 <span>
-                  {mode === 'login' ? 'Authenticate & Sign In' : mode === 'signup' ? 'Create Account & Send Verification' : 'Send Reset Link'}
+                  {mode === 'login' ? 'Log In' : mode === 'signup' ? 'Sign Up' : 'Send Reset Link'}
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </>
@@ -372,7 +328,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
             className="w-full py-2.5 px-4 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-200 text-xs font-semibold rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Eye className="w-4 h-4 text-cyan-400" />
-            <span>Continue as Guest Clinician</span>
+            <span>Continue as Guest</span>
           </button>
         </div>
 
