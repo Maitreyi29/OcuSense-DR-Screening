@@ -16,6 +16,7 @@ import NeedHelpSection from './components/NeedHelpSection';
 import ContactSection from './components/ContactSection';
 import HistoryModal from './components/HistoryModal';
 import FooterDisclaimer from './components/FooterDisclaimer';
+import MobileApp from './mobile/MobileApp';
 import { AlertCircle } from 'lucide-react';
 import { supabase } from './supabaseClient';
 import { formatSupabaseUser, logoutUser } from './services/authService';
@@ -23,6 +24,32 @@ import { formatSupabaseUser, logoutUser } from './services/authService';
 const API_BASE_URL = 'https://ocusense-api.onrender.com';
 
 export default function App() {
+  // Mobile Screen Detector
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'mobile') return true;
+      if (params.get('mode') === 'desktop') return false;
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'mobile') {
+        setIsMobile(true);
+      } else if (params.get('mode') === 'desktop') {
+        setIsMobile(false);
+      } else {
+        setIsMobile(window.innerWidth < 768);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -276,6 +303,10 @@ export default function App() {
       }, 100);
     }
   };
+
+  if (isMobile) {
+    return <MobileApp />;
+  }
 
   return (
     <div className="relative min-h-screen flex flex-col font-sans bg-[#0b0f19] text-slate-100 selection:bg-cyan-500 selection:text-white">
